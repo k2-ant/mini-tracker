@@ -1,0 +1,6 @@
+{
+  "label": "Mini Tracker",
+  "icon": "icon.png",
+  "launch": "launch.sh",
+  "description": "Keep track of your backlog progress"
+}

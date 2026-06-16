@@ -1,0 +1,6 @@
+{
+  "label": "FB Test",
+  "icon": "icon.png",
+  "launch": "launch.sh",
+  "description": "Framebuffer + input smoke test (temporary)"
+}

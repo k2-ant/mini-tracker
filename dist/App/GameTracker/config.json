@@ -1,0 +1,6 @@
+{
+  "label": "Game Tracker",
+  "icon": "icon.png",
+  "launch": "launch.sh",
+  "description": "Track beaten games & backlog with per-console stats"
+}

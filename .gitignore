@@ -1,0 +1,31 @@
+# Real SD-card data pulled for local development — never commit personal data
+sample-data/
+
+# Build artifacts (root-level dev binaries; the distributable lives in dist/App/)
+build/
+*.o
+*.so
+tracker
+*.arm
+dist/GameTracker-*.zip
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# First-run sentinel (deploy-only, never committed)
+.show_intro
+
+# Internal docs — kept locally, not published
+docs/INSTALL.md
+docs/PLAN.md
+docs/PUBLIC_RELEASE.md
+docs/RESEARCH.md
+docs/LEARNINGS.md
+docs/SAFETY.md
+
+# Release artifact (attached to the GitHub Release, not committed)
+MiniTracker.zip
+
+# OS noise
+.DS_Store
+._*

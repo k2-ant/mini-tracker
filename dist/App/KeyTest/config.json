@@ -1,0 +1,6 @@
+{
+  "label": "Key Test",
+  "icon": "icon.png",
+  "launch": "launch.sh",
+  "description": "Button mapping diagnostic (temporary)"
+}
