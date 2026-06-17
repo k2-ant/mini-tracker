@@ -27,7 +27,7 @@
 #include <signal.h>
 #include <dirent.h>
 
-#define MT_VERSION "1.0"
+#define MT_VERSION "1.0.1"
 /* ---- persisted settings (meta keys; defaults are the public-safe values) ---- */
 static int g_favsync = 0;   /* "fav_sync": sync Playing <-> console favourite.json (opt-in) */
 static int g_rumble  = 2;   /* "rumble":   strength 0=Off 1=Light 2=Medium 3=Strong */
@@ -470,6 +470,8 @@ static void write_favourite(Game *gm, int add) {
  * recognises. /tmp is tmpfs; if the emulator/rom is missing we do nothing.
  * Returns 1 if queued. */
 #define MT_LAUNCH_FILE "/tmp/mt_cmd"
+#define MT_RECENT_FILE "/tmp/mt_recent"      /* JSON recent-list line for the game */
+#define MT_RECENT_KEY  "/tmp/mt_recent_key"  /* raw rompath, for launch.sh de-dupe */
 static int request_launch(Game *gm) {
     if (!g_emu[0] || !g_roms[0]) return 0;
     const char *console = cons[gm->cidx].name;
@@ -489,6 +491,36 @@ static int request_launch(Game *gm) {
     sh_dq_esc(rom,    er, sizeof er);
     fprintf(f, "LD_PRELOAD=/mnt/SDCARD/miyoo/app/../lib/libpadsp.so \"%s\" \"%s\"\n", es, er);
     fclose(f);
+
+    /* Register the game in OnionOS's recent list so GameSwitcher shows a card +
+     * resume screenshot. MainUI normally writes recents, but our quick_switch
+     * handoff bypasses it; launch.sh merges this line into the active
+     * recentlist*.json. Use MainUI's exact Emu-relative rompath form so it
+     * dedupes against native entries and reuses the same romScreens/<hash>.png.
+     * Best-effort: if any of this fails the game still launches (no card).
+     * FAT32 forbids " and \ in names, so the JSON-escaped rompath == the raw key. */
+    char rrel[760], irel[820];
+    snprintf(rrel, sizeof rrel, "%s/%s/../../Roms/%s/%s", g_emu, emu, console, base);
+    if (gm->img[0]) {
+        snprintf(irel, sizeof irel, "%s", gm->img);
+    } else {                                             /* fall back to <rom>.png in Imgs/ */
+        char nb[200]; snprintf(nb, sizeof nb, "%s", base);
+        char *dot = strrchr(nb, '.'); if (dot) *dot = 0;
+        snprintf(irel, sizeof irel, "%s/%s/../../Roms/%s/Imgs/%s.png", g_emu, emu, console, nb);
+    }
+    FILE *r = fopen(MT_RECENT_FILE, "w");
+    if (r) {
+        char jl[340], jr[820], ji[900], js[700];
+        json_esc(gm->name, jl, sizeof jl);
+        json_esc(rrel,     jr, sizeof jr);
+        json_esc(irel,     ji, sizeof ji);
+        json_esc(script,   js, sizeof js);
+        fprintf(r, "{\"label\":\"%s\",\"rompath\":\"%s\",\"imgpath\":\"%s\",\"launch\":\"%s\",\"type\":5}\n",
+                jl, jr, ji, js);
+        fclose(r);
+        FILE *k = fopen(MT_RECENT_KEY, "w");
+        if (k) { fputs(rrel, k); fclose(k); }
+    }
     return 1;
 }
 

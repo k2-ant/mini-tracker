@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.0.1 — Bugfix
+
+### Fixed
+- **GameSwitcher now registers games launched from the app.** Launching through
+  the app bypasses MainUI, which is what normally writes the OnionOS recent list
+  that GameSwitcher reads — so launched games got no GameSwitcher card or resume
+  screenshot (only play‑activity/playtime was recorded). The app now writes the
+  game's `type:5` recent entry itself (in MainUI's exact rom‑path form, so it
+  dedupes against native launches and reuses the same screenshot) and merges it
+  into the active `recentlist*.json` atomically. The merge is strictly additive:
+  if it ever fails, the game still launches as before.
+
 ## v1.0 — Initial release
 
 The first public release of **Mini Tracker** — a backlog & completion tracker for OnionOS on the
